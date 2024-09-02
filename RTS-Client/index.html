@@ -2,44 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RTS Game Client</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
+    <title>Web RTS Game</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>RTS Game Client</h1>
-    <script>
-        // Function to start the SignalR connection
-        async function startConnection() {
-            try {
-                // Create a connection to the SignalR hub
-                const connection = new signalR.HubConnectionBuilder()
-                    .withUrl("http://localhost:5288/gameHub") // Make sure this URL matches your server's URL
-                    .withAutomaticReconnect() // Optional: Reconnect automatically if the connection is lost
-                    .configureLogging(signalR.LogLevel.Information) // Optional: Configure logging
-                    .build();
+    <!-- Main Page -->
+    <div id="mainPage" class="page">
+        <h1>Welcome to Web RTS</h1>
+        <button onclick="showPage('loginPage')">Login</button>
+        <button onclick="showPage('registerPage')">Register</button>
+    </div>
 
-                // Start the connection
-                await connection.start();
-                console.log("Connected to SignalR hub successfully!");
+    <!-- Login Page -->
+    <div id="loginPage" class="page" style="display: none;">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" id="loginUsername" placeholder="Username" required><br>
+            <input type="password" id="loginPassword" placeholder="Password" required><br>
+            <button type="submit">Login</button>
+        </form>
+        <button onclick="showPage('mainPage')">Back</button>
+    </div>
 
-                // Optional: Example of listening to server-sent messages
-                connection.on("ReceiveMessage", (message) => {
-                    console.log("Received message from server:", message);
-                });
+    <!-- Register Page -->
+    <div id="registerPage" class="page" style="display: none;">
+        <h2>Register</h2>
+        <form id="registerForm">
+            <input type="text" id="registerUsername" placeholder="Username" required><br>
+            <input type="password" id="registerPassword" placeholder="Password" required><br>
+            <button type="submit">Register</button>
+        </form>
+        <button onclick="showPage('mainPage')">Back</button>
+    </div>
 
-                // Send a test message to the server (example)
-                connection.invoke("SendMessage", "Hello from the client!")
-                    .catch(err => console.error("Error sending message to server:", err));
-            } catch (error) {
-                console.error("Error connecting to SignalR hub:", error);
-                setTimeout(startConnection, 5000); // Retry connection after 5 seconds
-            }
-        }
-
-        // Start the connection when the page loads
-        startConnection();
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>

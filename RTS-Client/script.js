@@ -1,66 +1,64 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-const GAME_STATE = {
-    resources: { gold: 100, wood: 100 },
-    units: [],
-    buildings: [],
-    camera: { x: 0, y: 0 }
-};
-
-// Initialize SignalR connection
-const connection = new signalR.HubConnectionBuilder()
-    .withUrl("http://localhost:5288/gameHub") // Your server's URL
-    .build();
-
-async function startConnection() {
-    try {
-        await connection.start();
-        console.log("Connected to the game server.");
-    } catch (err) {
-        console.error("Error connecting to server:", err);
-        setTimeout(startConnection, 5000); // Retry on failure
+// Function to show a specific page and hide others
+function showPage(pageId) {
+    const pages = document.getElementsByClassName("page");
+    for (let page of pages) {
+        page.style.display = "none"; // Hide all pages
     }
+    document.getElementById(pageId).style.display = "block"; // Show the selected page
 }
 
-// Handle server events
-connection.on("PlayerJoined", (playerName) => {
-    console.log(`${playerName} joined the game.`);
+// Event listener for the Register form submission
+document.getElementById("registerForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    
+    const username = document.getElementById("registerUsername").value;
+    const password = document.getElementById("registerPassword").value;
+
+    try {
+        const response = await fetch("http://localhost:5288/api/users/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ Username: username, PasswordHash: password })
+        });
+
+        if (response.ok) {
+            alert("User registered successfully!");
+            showPage('mainPage'); // Redirect to the main page after registration
+        } else {
+            const error = await response.text();
+            alert("Error: " + error);
+        }
+    } catch (error) {
+        console.error("Error during registration:", error);
+    }
 });
 
-connection.on("ReceivePlayerAction", (playerId, action) => {
-    console.log(`Player ${playerId} performed action: ${action}`);
+// Event listener for the Login form submission
+document.getElementById("loginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const username = document.getElementById("loginUsername").value;
+    const password = document.getElementById("loginPassword").value;
+
+    try {
+        const response = await fetch("http://localhost:5288/api/users/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ Username: username, PasswordHash: password })
+        });
+
+        if (response.ok) {
+            alert("User logged in successfully!");
+            showPage('mainPage'); // Redirect to the main page after login
+        } else {
+            const error = await response.text();
+            alert("Error: " + error);
+        }
+    } catch (error) {
+        console.error("Error during login:", error);
+    }
 });
-
-async function joinGame(playerName) {
-    try {
-        await connection.invoke("JoinGame", playerName);
-    } catch (err) {
-        console.error("Error joining game:", err);
-    }
-}
-
-async function playerAction(playerId, action) {
-    try {
-        await connection.invoke("PlayerAction", playerId, action);
-    } catch (err) {
-        console.error("Error sending player action:", err);
-    }
-}
-
-function initGame() {
-    ctx.font = '16px Arial';
-    ctx.fillStyle = 'white';
-
-    startConnection();
-    renderGame();
-}
-
-function renderGame() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillText(`Gold: ${GAME_STATE.resources.gold}`, 10, 20);
-    ctx.fillText(`Wood: ${GAME_STATE.resources.wood}`, 10, 40);
-    requestAnimationFrame(renderGame);
-}
-
-initGame();
