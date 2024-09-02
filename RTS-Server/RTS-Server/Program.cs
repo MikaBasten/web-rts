@@ -1,6 +1,7 @@
 using RTS_Server.Hubs;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity; // Add this
+using Microsoft.AspNetCore.Identity;
+using System.Text;
 
 using Core.Models;
 using Core.IRepository;
@@ -13,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Configuration
 builder.Configuration.AddJsonFile("appsettings.json", optional: false);
-var siteBUrl = builder.Configuration["SiteBUrl"];
+var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 // Register your connection string from appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -33,15 +34,18 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>(); // Register PasswordHasher
 
+// Register IConfiguration for DI
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+
 // Configure CORS to allow a specific origin
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://127.0.0.1:5500") // Allow only this origin
-              .AllowAnyMethod()    // Allow all HTTP methods (GET, POST, etc.)
-              .AllowAnyHeader()    // Allow all headers
-              .AllowCredentials(); // Allow credentials (cookies, authorization headers, etc.)
+        policy.WithOrigins("http://127.0.0.1:5500")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -58,10 +62,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseAuthorization();
-
-// Use CORS middleware
 app.UseCors();
+app.UseAuthorization();
 
 app.MapControllers();
 

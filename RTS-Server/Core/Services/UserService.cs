@@ -2,23 +2,30 @@
 using Core.IServices;
 using Core.Models;
 using Microsoft.AspNetCore.Identity;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Core.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IPasswordHasher<User> _passwordHasher; // Add PasswordHasher
+        private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly IConfiguration _configuration; // Access JWT settings
 
-        public UserService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher)
+        public UserService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher, IConfiguration configuration)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher; // Inject PasswordHasher
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         public bool Register(string username, string password)
@@ -36,6 +43,18 @@ namespace Core.Services
             return true;
         }
 
+        public string Login(string username, string password)
+        {
+            var user = _userRepository.GetUserByUsername(username);
+            if (user == null)
+                return null;
+
+            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+            if (result == PasswordVerificationResult.Failed)
+                return null;
+
+            return GenerateJwtToken(user); // Return the JWT token
+        }
         public bool ValidateUser(string username, string password)
         {
             var user = _userRepository.GetUserByUsername(username);
@@ -50,6 +69,28 @@ namespace Core.Services
         {
             // Hash the password using ASP.NET Core Identity
             return _passwordHasher.HashPassword(null, password);
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

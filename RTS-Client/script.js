@@ -25,7 +25,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
         if (response.ok) {
             alert("User registered successfully!");
-            showPage('mainPage'); // Redirect to the main page after registration
+            showPage('loginPage'); // Redirect to the login page after registration
         } else {
             const error = await response.text();
             alert("Error: " + error);
@@ -52,13 +52,41 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         });
 
         if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem("token", data.Token); // Store the JWT token
+            localStorage.setItem("username", username); // Store the username
             alert("User logged in successfully!");
-            showPage('mainPage'); // Redirect to the main page after login
+            showDashboard();
         } else {
             const error = await response.text();
             alert("Error: " + error);
         }
     } catch (error) {
         console.error("Error during login:", error);
+    }
+});
+
+// Function to show the dashboard after login
+function showDashboard() {
+    const username = localStorage.getItem("username");
+    document.getElementById("usernameDisplay").textContent = username;
+    showPage('dashboardPage');
+}
+
+// Logout function
+function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    alert("Logged out successfully!");
+    showPage('mainPage');
+}
+
+// Check if the user is already logged in
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+        showDashboard(); // Redirect to dashboard if token exists
+    } else {
+        showPage('mainPage'); // Show main page by default
     }
 });
