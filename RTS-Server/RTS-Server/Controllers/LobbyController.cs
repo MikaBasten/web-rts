@@ -22,11 +22,11 @@ namespace RTS_Server.Controllers
 
             // POST: api/lobbies
             [HttpPost]
-            public ActionResult<Lobby> CreateLobby([FromQuery] string hostUserId, [FromQuery] string lobbyName, [FromQuery] int playerLimit)
+            public async Task<ActionResult<Lobby>> CreateLobby([FromQuery] string hostUserId, [FromQuery] string lobbyName, [FromQuery] int playerLimit)
             {
                 try
                 {
-                    var lobby = _lobbyService.CreateLobby(hostUserId, lobbyName, playerLimit);
+                    var lobby = await _lobbyService.CreateLobbyAsync(hostUserId, lobbyName, playerLimit);
                     return Ok(lobby);
                 }
                 catch (ArgumentException ex)
@@ -37,9 +37,9 @@ namespace RTS_Server.Controllers
 
             // POST: api/lobbies/{lobbyId}/join
             [HttpPost("{lobbyId}/join")]
-            public ActionResult JoinLobby(string lobbyId, [FromQuery] string userId, [FromQuery] string username)
+            public async Task<ActionResult> JoinLobby(string lobbyId, [FromQuery] string userId, [FromQuery] string username)
             {
-                var success = _lobbyService.JoinLobby(lobbyId, userId, username);
+                var success = await _lobbyService.JoinLobbyAsync(lobbyId, userId, username);
                 if (!success)
                     return BadRequest("Unable to join the lobby.");
 
@@ -48,9 +48,9 @@ namespace RTS_Server.Controllers
 
             // POST: api/lobbies/{lobbyId}/leave
             [HttpPost("{lobbyId}/leave")]
-            public ActionResult LeaveLobby(string lobbyId, [FromQuery] string userId)
+            public async Task<ActionResult> LeaveLobby(string lobbyId, [FromQuery] string userId)
             {
-                var success = _lobbyService.LeaveLobby(lobbyId, userId);
+                var success = await _lobbyService.LeaveLobbyAsync(lobbyId, userId);
                 if (!success)
                     return BadRequest("Unable to leave the lobby.");
 
@@ -59,17 +59,17 @@ namespace RTS_Server.Controllers
 
             // GET: api/lobbies
             [HttpGet]
-            public ActionResult<List<Lobby>> GetAllLobbies()
+            public async Task<ActionResult<List<Lobby>>> GetAllLobbies()
             {
-                var lobbies = _lobbyService.GetAllLobbies();
+                var lobbies = await _lobbyService.GetAllLobbiesAsync();
                 return Ok(lobbies);
             }
 
             // GET: api/lobbies/{lobbyId}
             [HttpGet("{lobbyId}")]
-            public ActionResult<Lobby> GetLobbyById(string lobbyId)
+            public async Task<ActionResult<Lobby>> GetLobbyById(string lobbyId)
             {
-                var lobby = _lobbyService.GetLobbyById(lobbyId);
+                var lobby = await _lobbyService.GetLobbyByIdAsync(lobbyId);
                 if (lobby == null)
                     return NotFound("Lobby not found.");
 
@@ -78,9 +78,9 @@ namespace RTS_Server.Controllers
 
             // POST: api/lobbies/{lobbyId}/start
             [HttpPost("{lobbyId}/start")]
-            public ActionResult StartGame(string lobbyId)
+            public async Task<ActionResult> StartGame(string lobbyId)
             {
-                var success = _lobbyService.StartGame(lobbyId);
+                var success = await _lobbyService.StartGameAsync(lobbyId);
                 if (!success)
                     return BadRequest("Unable to start the game.");
 

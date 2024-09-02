@@ -35,7 +35,7 @@ namespace Core.Services
 
         public async Task<bool> JoinLobbyAsync(int lobbyId, string userId, string username)
         {
-            var user = new User { Id = userId, UserName = username };
+            var user = new User { Id = userId, Username = username };
             return await _lobbyRepository.AddPlayerToLobbyAsync(lobbyId, user);
         }
 

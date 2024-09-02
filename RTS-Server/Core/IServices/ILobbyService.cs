@@ -9,11 +9,11 @@ namespace Core.IServices
 {
     public interface ILobbyService
     {
-        Lobby CreateLobbyAsync(string hostUserId, string lobbyName, int playerLimit);
-        bool JoinLobby(string lobbyId, string userId, string username);
-        bool LeaveLobby(string lobbyId, string userId);
-        List<Lobby> GetAllLobbies();
-        Lobby GetLobbyById(string lobbyId);
-        bool StartGame(string lobbyId);
+        Task<Lobby> CreateLobbyAsync(string hostUserId, string lobbyName, int playerLimit);
+        Task<bool> JoinLobbyAsync(int lobbyId, string userId, string username);
+        Task<bool> LeaveLobbyAsync(int lobbyId, string userId);
+        Task<IEnumerable<Lobby>> GetAllLobbiesAsync();
+        Task<Lobby> GetLobbyByIdAsync(int lobbyId);
+        Task<bool> StartGameAsync(int lobbyId);
     }
 }
