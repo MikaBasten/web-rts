@@ -1,0 +1,6 @@
+@RTS_Server_HostAddress = http://localhost:5288
+
+GET {{RTS_Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
