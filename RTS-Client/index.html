@@ -40,7 +40,27 @@
     <div id="dashboardPage" class="page" style="display: none;">
         <h2>Dashboard</h2>
         <p>Welcome, <span id="usernameDisplay"></span>!</p>
+        <button onclick="showPage('createLobbyPage')">Create Lobby</button>
+        <button onclick="fetchLobbies()">View Lobbies</button>
         <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Create Lobby Page -->
+    <div id="createLobbyPage" class="page" style="display: none;">
+        <h2>Create Lobby</h2>
+        <form id="createLobbyForm">
+            <input type="text" id="lobbyName" placeholder="Lobby Name" required><br>
+            <input type="number" id="playerLimit" placeholder="Player Limit (2-6)" min="2" max="6" required><br>
+            <button type="submit">Create Lobby</button>
+        </form>
+        <button onclick="showPage('dashboardPage')">Back</button>
+    </div>
+
+    <!-- Lobbies List Page -->
+    <div id="lobbiesPage" class="page" style="display: none;">
+        <h2>Available Lobbies</h2>
+        <ul id="lobbiesList"></ul>
+        <button onclick="showPage('dashboardPage')">Back</button>
     </div>
 
     <script src="script.js"></script>

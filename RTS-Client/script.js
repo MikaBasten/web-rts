@@ -90,3 +90,104 @@ document.addEventListener("DOMContentLoaded", () => {
         showPage('mainPage'); // Show main page by default
     }
 });
+
+// Event listener for the Create Lobby form submission
+document.getElementById("createLobbyForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    
+    const lobbyName = document.getElementById("lobbyName").value;
+    const playerLimit = document.getElementById("playerLimit").value;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("You must be logged in to create a lobby.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:5288/api/lobbies?hostUserId=${encodeURIComponent(localStorage.getItem("username"))}&lobbyName=${encodeURIComponent(lobbyName)}&playerLimit=${playerLimit}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            alert("Lobby created successfully!");
+            showPage('dashboardPage');
+        } else {
+            const error = await response.text();
+            alert("Error: " + error);
+        }
+    } catch (error) {
+        console.error("Error during lobby creation:", error);
+    }
+});
+
+// Function to fetch and display available lobbies
+async function fetchLobbies() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert("You must be logged in to view lobbies.");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:5288/api/lobbies", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const lobbies = await response.json();
+            const lobbiesList = document.getElementById("lobbiesList");
+            lobbiesList.innerHTML = ''; // Clear current list
+
+            lobbies.forEach(lobby => {
+                const listItem = document.createElement("li");
+                listItem.textContent = `Lobby: ${lobby.name}, Players: ${lobby.currentPlayers}/${lobby.playerLimit}`;
+                listItem.onclick = () => joinLobby(lobby.id); // Click to join lobby
+                lobbiesList.appendChild(listItem);
+            });
+
+            showPage('lobbiesPage');
+        } else {
+            const error = await response.text();
+            alert("Error fetching lobbies: " + error);
+        }
+    } catch (error) {
+        console.error("Error fetching lobbies:", error);
+    }
+}
+
+// Function to join a lobby
+async function joinLobby(lobbyId) {
+    const token = localStorage.getItem("token");
+    const username = localStorage.getItem("username");
+
+    if (!token || !username) {
+        alert("You must be logged in to join a lobby.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:5288/api/lobbies/${lobbyId}/join?userId=${encodeURIComponent(username)}&username=${encodeURIComponent(username)}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            alert("Successfully joined the lobby!");
+            fetchLobbies(); // Refresh lobbies list
+        } else {
+            const error = await response.text();
+            alert("Error joining lobby: " + error);
+        }
+    } catch (error) {
+        console.error("Error joining lobby:", error);
+    }
+}

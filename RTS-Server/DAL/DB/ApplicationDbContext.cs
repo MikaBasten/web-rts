@@ -16,5 +16,6 @@ namespace DAL.DB
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Lobby> Lobbies { get; set; }
     }
 }

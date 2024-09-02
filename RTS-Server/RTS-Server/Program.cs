@@ -33,6 +33,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 // Register services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>(); // Register PasswordHasher
+builder.Services.AddScoped<ILobbyService, LobbyService>();
+
 
 // Register IConfiguration for DI
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
