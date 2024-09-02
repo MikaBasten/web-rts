@@ -26,6 +26,8 @@ namespace Core.Services
             _userRepository = userRepository;
             _passwordHasher = passwordHasher; // Inject PasswordHasher
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+
+            Console.WriteLine("JWT Secret: " + _configuration["Jwt:Secret"]);
         }
 
         public bool Register(string username, string password)
@@ -79,7 +81,9 @@ namespace Core.Services
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]));
+            var secretKey = _configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException("JWT Secret is not configured.");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
