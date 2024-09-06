@@ -9,6 +9,7 @@ namespace Core.IRepository
 {
     public interface IUserRepository
     {
+        Task<User> GetUserByIdAsync(int userId);
         User GetUserByUsername(string username);
         void AddUser(User user);
     }

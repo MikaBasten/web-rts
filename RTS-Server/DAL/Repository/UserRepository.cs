@@ -18,6 +18,10 @@ namespace DAL.Repository
             _context = context;
         }
 
+        public async Task<User> GetUserByIdAsync(int userId)
+        {
+            return await _context.Users.FindAsync(userId);
+        }
         public User GetUserByUsername(string username)
         {
             return _context.Users.SingleOrDefault(u => u.Username == username);

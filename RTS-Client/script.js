@@ -50,10 +50,11 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             },
             body: JSON.stringify({ Username: username, PasswordHash: password })
         });
-
+        
         if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem("token", data.Token); // Store the JWT token
+            const data = await response.json(); // Wait for the response to be parsed as JSON
+            console.log("Token received from server:", data); // Debug: Check if token is received correctly
+            localStorage.setItem("token", data.token); // Store the JWT token
             localStorage.setItem("username", username); // Store the username
             alert("User logged in successfully!");
             showDashboard();
@@ -61,10 +62,13 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             const error = await response.text();
             alert("Error: " + error);
         }
+
+        
     } catch (error) {
         console.error("Error during login:", error);
     }
 });
+
 
 // Function to show the dashboard after login
 function showDashboard() {
@@ -91,30 +95,30 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// Event listener for the Create Lobby form submission
+// Event listener for the Lobby creation form submission
 document.getElementById("createLobbyForm").addEventListener("submit", async function (e) {
     e.preventDefault();
-    
-    const lobbyName = document.getElementById("lobbyName").value;
+
+    const name = document.getElementById("lobbyName").value;
     const playerLimit = document.getElementById("playerLimit").value;
     const token = localStorage.getItem("token");
 
-    if (!token) {
-        alert("You must be logged in to create a lobby.");
-        return;
-    }
-
     try {
-        const response = await fetch(`http://localhost:5288/api/lobbies?hostUserId=${encodeURIComponent(localStorage.getItem("username"))}&lobbyName=${encodeURIComponent(lobbyName)}&playerLimit=${playerLimit}`, {
+        const response = await fetch(`http://localhost:5288/api/lobbies/create?name=${name}&playerLimit=${playerLimit}`, {
             method: "POST",
             headers: {
+                "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             }
         });
 
         if (response.ok) {
-            alert("Lobby created successfully!");
-            showPage('dashboardPage');
+            const lobby = await response.json();
+            console.log("Lobby created:", lobby);
+
+            // Automatically join the lobby screen
+            localStorage.setItem("lobbyId", lobby.id); // Store the lobby ID for future use
+            showLobbyScreen(lobby.id); // Navigate to lobby screen
         } else {
             const error = await response.text();
             alert("Error: " + error);
@@ -139,6 +143,7 @@ async function fetchLobbies() {
                 "Authorization": `Bearer ${token}`
             }
         });
+        console.log("Token being sent:", token);
 
         if (response.ok) {
             const lobbies = await response.json();
@@ -165,15 +170,14 @@ async function fetchLobbies() {
 // Function to join a lobby
 async function joinLobby(lobbyId) {
     const token = localStorage.getItem("token");
-    const username = localStorage.getItem("username");
 
-    if (!token || !username) {
+    if (!token) {
         alert("You must be logged in to join a lobby.");
         return;
     }
 
     try {
-        const response = await fetch(`http://localhost:5288/api/lobbies/${lobbyId}/join?userId=${encodeURIComponent(username)}&username=${encodeURIComponent(username)}`, {
+        const response = await fetch(`http://localhost:5288/api/lobbies/join/${lobbyId}`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -189,5 +193,105 @@ async function joinLobby(lobbyId) {
         }
     } catch (error) {
         console.error("Error joining lobby:", error);
+    }
+}
+
+// Function to leave a lobby
+async function leaveLobby(lobbyId) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("You must be logged in to leave a lobby.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:5288/api/lobbies/leave/${lobbyId}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            alert("Successfully left the lobby!");
+            fetchLobbies(); // Refresh lobbies list
+        } else {
+            const error = await response.text();
+            alert("Error leaving lobby: " + error);
+        }
+    } catch (error) {
+        console.error("Error leaving lobby:", error);
+    }
+}
+
+async function showLobbyScreen(lobbyId) {
+    // Use showPage to manage page visibility
+    showPage('lobbyScreen');
+
+    // Connect to the SignalR chat hub
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("http://localhost:5288/chatHub", { accessTokenFactory: () => localStorage.getItem("token") })
+        .build();
+
+    // Start the connection
+    try {
+        await connection.start();
+        console.log("Connected to the chat hub");
+
+        // Join the lobby group
+        await connection.invoke("JoinLobby", lobbyId);
+
+        // Listen for messages
+        connection.on("ReceiveMessage", (user, message) => {
+            const chatBox = document.getElementById("chatBox");
+            const newMessage = document.createElement("div");
+            newMessage.textContent = `${user}: ${message}`;
+            chatBox.appendChild(newMessage);
+        });
+
+        // Handle sending messages
+        document.getElementById("sendMessageButton").addEventListener("click", async function () {
+            const message = document.getElementById("chatMessage").value;
+            const username = localStorage.getItem("username");
+
+            if (message) {
+                await connection.invoke("SendMessageToLobby", lobbyId, username, message);
+                document.getElementById("chatMessage").value = ""; // Clear the input field
+            }
+        });
+
+    } catch (error) {
+        console.error("Error connecting to chat hub:", error);
+    }
+}
+
+
+// Function to start a game in a lobby
+async function startGame(lobbyId) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("You must be logged in to start a game.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:5288/api/lobbies/start/${lobbyId}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            alert("Game started successfully!");
+            fetchLobbies(); // Refresh lobbies list
+        } else {
+            const error = await response.text();
+            alert("Error starting game: " + error);
+        }
+    } catch (error) {
+        console.error("Error starting game:", error);
     }
 }

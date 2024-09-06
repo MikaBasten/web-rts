@@ -9,15 +9,13 @@ namespace Core.IRepository
 {
     public interface ILobbyRepository
     {
-        /*
         Task<Lobby> CreateLobbyAsync(Lobby lobby);
         Task<Lobby> GetLobbyByIdAsync(int lobbyId);
         Task<IEnumerable<Lobby>> GetAllLobbiesAsync();
         Task<Lobby> UpdateLobbyAsync(Lobby lobby);
         Task<bool> DeleteLobbyAsync(int lobbyId);
-        Task<bool> AddPlayerToLobbyAsync(int lobbyId, User user);
-        Task<bool> RemovePlayerFromLobbyAsync(int lobbyId, User user);
-        */
+        Task<bool> AddPlayerToLobbyAsync(int lobbyId, Player player);
+        Task<bool> RemovePlayerFromLobbyAsync(int lobbyId, int userId);
     }
 
 }

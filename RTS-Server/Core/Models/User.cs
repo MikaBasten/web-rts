@@ -11,8 +11,5 @@ namespace Core.Models
         public int Id { get; set; }
         public string Username { get; set; }
         public string PasswordHash { get; set; }  // Store hashed passwords for security
-        public int Faction { get; set; }
-        public bool IsReady { get; set; } = false;
-
     }
 }

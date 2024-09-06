@@ -30,6 +30,11 @@ namespace Core.Services
             Console.WriteLine("JWT Secret: " + _configuration["Jwt:Secret"]);
         }
 
+        public async Task<User> GetUserByIdAsync(int userId)
+        {
+            return await _userRepository.GetUserByIdAsync(userId);
+        }
+
         public bool Register(string username, string password)
         {
             if (_userRepository.GetUserByUsername(username) != null)
@@ -76,14 +81,16 @@ namespace Core.Services
         private string GenerateJwtToken(User user)
         {
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-            };
+    {
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+    };
 
-            var secretKey = _configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException("JWT Secret is not configured.");
+            var secretKey = _configuration["Jwt:SecretKey"];
+            if (string.IsNullOrEmpty(secretKey))
+                throw new InvalidOperationException("JWT Secret is not configured.");
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(

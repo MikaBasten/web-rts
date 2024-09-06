@@ -10,10 +10,10 @@ namespace Core.Models
 {
     public class Lobby
     {
-        public int Id { get; set; } 
+        public int Id { get; set; }
         public string Name { get; set; } // Name of the lobby
-        public string HostUserId { get; set; } // User ID of the player who created the lobby
-        public List<User> Players { get; set; } = new List<User>(); // List of players in the lobby
+        public int HostUserId { get; set; } // User ID of the player who created the lobby
+        public List<Player> Players { get; set; } = new List<Player>(); // List of players in the lobby
         public int PlayerLimit { get; set; } // Maximum number of players allowed in the lobby
         public bool IsGameStarted { get; set; } = false; // Status to check if the game has started
     }

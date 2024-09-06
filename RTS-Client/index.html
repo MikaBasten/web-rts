@@ -56,6 +56,16 @@
         <button onclick="showPage('dashboardPage')">Back</button>
     </div>
 
+    <!-- Lobby Screen Page -->
+    <div id="lobbyScreen" class="page" style="display: none;">
+        <h2>Lobby</h2>
+        <div id="chatBox" style="border: 1px solid #ddd; padding: 10px; height: 300px; overflow-y: scroll;">
+            <!-- Messages will appear here -->
+        </div>
+        <input type="text" id="chatMessage" placeholder="Type a message..." />
+        <button id="sendMessageButton">Send</button>
+    </div>
+    
     <!-- Lobbies List Page -->
     <div id="lobbiesPage" class="page" style="display: none;">
         <h2>Available Lobbies</h2>
