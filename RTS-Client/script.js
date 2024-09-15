@@ -153,11 +153,17 @@ async function fetchLobbies() {
             lobbies.forEach(lobby => {
                 const listItem = document.createElement("li");
                 listItem.textContent = `Lobby: ${lobby.name}, Players: ${lobby.currentPlayers}/${lobby.playerLimit}`;
-                listItem.onclick = () => joinLobby(lobby.id); // Click to join lobby
-                lobbiesList.appendChild(listItem);
+
+                // Create a "Join" button for each lobby
+                const joinButton = document.createElement("button");
+                joinButton.textContent = "Join";
+                joinButton.onclick = () => joinLobby(lobby.id); // Call the joinLobby function when clicked
+                listItem.appendChild(joinButton); // Append the join button to the list item
+
+                lobbiesList.appendChild(listItem); // Append the list item to the list
             });
 
-            showPage('lobbiesPage');
+            showPage('lobbiesPage'); // Show the lobbies page
         } else {
             const error = await response.text();
             alert("Error fetching lobbies: " + error);
@@ -166,6 +172,7 @@ async function fetchLobbies() {
         console.error("Error fetching lobbies:", error);
     }
 }
+
 
 // Function to join a lobby
 async function joinLobby(lobbyId) {
@@ -186,7 +193,12 @@ async function joinLobby(lobbyId) {
 
         if (response.ok) {
             alert("Successfully joined the lobby!");
-            fetchLobbies(); // Refresh lobbies list
+            
+            // Store the lobby ID in local storage for future use
+            localStorage.setItem("lobbyId", lobbyId);
+            
+            // Show the lobby screen and initialize the chat
+            showLobbyScreen(lobbyId);
         } else {
             const error = await response.text();
             alert("Error joining lobby: " + error);

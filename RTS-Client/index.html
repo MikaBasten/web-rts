@@ -66,13 +66,16 @@
         <button id="sendMessageButton">Send</button>
     </div>
     
-    <!-- Lobbies List Page -->
+    <!-- Lobbies Page -->
     <div id="lobbiesPage" class="page" style="display: none;">
         <h2>Available Lobbies</h2>
-        <ul id="lobbiesList"></ul>
-        <button onclick="showPage('dashboardPage')">Back</button>
+        <ul id="lobbiesList">
+            <!-- Lobbies will be populated here dynamically -->
+        </ul>
+        <button onclick="fetchLobbies()">Refresh Lobbies</button>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
