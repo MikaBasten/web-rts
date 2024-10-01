@@ -10,7 +10,7 @@ function showPage(pageId) {
 // Event listener for the Register form submission
 document.getElementById("registerForm").addEventListener("submit", async function (e) {
     e.preventDefault();
-    
+
     const username = document.getElementById("registerUsername").value;
     const password = document.getElementById("registerPassword").value;
 
@@ -50,7 +50,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             },
             body: JSON.stringify({ Username: username, PasswordHash: password })
         });
-        
+
         if (response.ok) {
             const data = await response.json(); // Wait for the response to be parsed as JSON
             console.log("Token received from server:", data); // Debug: Check if token is received correctly
@@ -63,12 +63,10 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             alert("Error: " + error);
         }
 
-        
     } catch (error) {
         console.error("Error during login:", error);
     }
 });
-
 
 // Function to show the dashboard after login
 function showDashboard() {
@@ -173,7 +171,6 @@ async function fetchLobbies() {
     }
 }
 
-
 // Function to join a lobby
 async function joinLobby(lobbyId) {
     const token = localStorage.getItem("token");
@@ -193,10 +190,10 @@ async function joinLobby(lobbyId) {
 
         if (response.ok) {
             alert("Successfully joined the lobby!");
-            
+
             // Store the lobby ID in local storage for future use
             localStorage.setItem("lobbyId", lobbyId);
-            
+
             // Show the lobby screen and initialize the chat
             showLobbyScreen(lobbyId);
         } else {
@@ -208,7 +205,6 @@ async function joinLobby(lobbyId) {
     }
 }
 
-// Function to leave a lobby
 async function leaveLobby(lobbyId) {
     const token = localStorage.getItem("token");
 
@@ -227,6 +223,10 @@ async function leaveLobby(lobbyId) {
 
         if (response.ok) {
             alert("Successfully left the lobby!");
+
+            // Close the SignalR connection when leaving the lobby
+            await closeConnection();
+
             fetchLobbies(); // Refresh lobbies list
         } else {
             const error = await response.text();
@@ -237,24 +237,81 @@ async function leaveLobby(lobbyId) {
     }
 }
 
+
+let connection = null; // Global variable to hold the SignalR connection
+
 async function showLobbyScreen(lobbyId) {
-    // Use showPage to manage page visibility
     showPage('lobbyScreen');
 
-    // Connect to the SignalR chat hub
-    const connection = new signalR.HubConnectionBuilder()
+    const token = localStorage.getItem("token");
+
+    try {
+        const response = await fetch(`http://localhost:5288/api/lobbies/${lobbyId}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const lobby = await response.json();
+
+            // Update the lobby details
+            document.getElementById("lobbyNameDisplay").textContent = lobby.name;
+            const playersList = document.getElementById("playersList");
+            playersList.innerHTML = ''; // Clear the list
+
+            // Display players and their ready status
+            lobby.players.forEach(player => {
+                const listItem = document.createElement("li");
+                listItem.textContent = `${player.username} - ${player.isReady ? "Ready" : "Not Ready"}`;
+                playersList.appendChild(listItem);
+            });
+
+            // Set up ready button
+            const readyButton = document.getElementById("readyButton");
+            const currentPlayer = lobby.players.find(p => p.username === localStorage.getItem("username"));
+            readyButton.textContent = currentPlayer.isReady ? "Unready" : "Ready";
+            readyButton.onclick = async () => {
+                await toggleReadyStatus(lobbyId);
+                await showLobbyScreen(lobbyId); // Refresh the lobby screen
+            };
+
+            // Set up leave button
+            document.getElementById("leaveLobbyButton").onclick = () => leaveLobby(lobbyId);
+
+            // Set up start game button
+            document.getElementById("startGameButton").onclick = () => startGame(lobbyId);
+
+        } else {
+            const error = await response.text();
+            alert("Error fetching lobby details: " + error);
+        }
+    } catch (error) {
+        console.error("Error fetching lobby details:", error);
+    }
+
+    // Check if there's an existing connection
+    if (connection && connection.state === signalR.HubConnectionState.Connected) {
+        console.log("SignalR connection already established.");
+        return;
+    }
+
+    // Create a new connection if none exists
+    connection = new signalR.HubConnectionBuilder()
         .withUrl("http://localhost:5288/chatHub", { accessTokenFactory: () => localStorage.getItem("token") })
+        .withAutomaticReconnect() // Optionally, automatically reconnect if the connection is lost
         .build();
 
-    // Start the connection
     try {
+        // Start the connection
         await connection.start();
         console.log("Connected to the chat hub");
 
         // Join the lobby group
         await connection.invoke("JoinLobby", lobbyId);
 
-        // Listen for messages
+        // Listen for incoming messages
         connection.on("ReceiveMessage", (user, message) => {
             const chatBox = document.getElementById("chatBox");
             const newMessage = document.createElement("div");
@@ -278,6 +335,39 @@ async function showLobbyScreen(lobbyId) {
     }
 }
 
+// Function to close the existing SignalR connection (if needed)
+async function closeConnection() {
+    if (connection && connection.state === signalR.HubConnectionState.Connected) {
+        await connection.stop();
+        console.log("Connection closed.");
+    }
+}
+
+// Function to toggle the ready status of the current player
+async function toggleReadyStatus(lobbyId) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("You must be logged in to toggle ready status.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:5288/api/lobbies/ready/${lobbyId}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            alert("Error toggling ready status: " + error);
+        }
+    } catch (error) {
+        console.error("Error toggling ready status:", error);
+    }
+}
 
 // Function to start a game in a lobby
 async function startGame(lobbyId) {
@@ -295,7 +385,7 @@ async function startGame(lobbyId) {
                 "Authorization": `Bearer ${token}`
             }
         });
-        
+
         if (response.ok) {
             alert("Game started successfully!");
             fetchLobbies(); // Refresh lobbies list

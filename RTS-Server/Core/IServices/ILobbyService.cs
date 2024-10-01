@@ -11,9 +11,10 @@ namespace Core.IServices
     {
         Task<Lobby> CreateLobbyAsync(string hostUserName, string lobbyName, int playerLimit);
         Task<bool> JoinLobbyAsync(int lobbyId, string userName);
-        Task<bool> LeaveLobbyAsync(int lobbyId, int userId);
+        Task<bool> LeaveLobbyAsync(int lobbyId, string userName);
         Task<IEnumerable<Lobby>> GetAllLobbiesAsync();
         Task<Lobby> GetLobbyByIdAsync(int lobbyId);
+        Task<bool> ToggleReadyStatusAsync(int lobbyId, string username);
         Task<bool> StartGameAsync(int lobbyId);
     }
 }

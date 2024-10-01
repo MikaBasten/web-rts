@@ -15,7 +15,8 @@ namespace Core.IRepository
         Task<Lobby> UpdateLobbyAsync(Lobby lobby);
         Task<bool> DeleteLobbyAsync(int lobbyId);
         Task<bool> AddPlayerToLobbyAsync(int lobbyId, Player player);
-        Task<bool> RemovePlayerFromLobbyAsync(int lobbyId, int userId);
+        Task<bool> RemovePlayerFromLobbyAsync(int lobbyId, string userName);
+        Task<bool> ToggleReadyStatusAsync(int lobbyId, string username);
     }
 
 }

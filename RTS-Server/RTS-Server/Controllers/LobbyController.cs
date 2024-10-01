@@ -4,6 +4,8 @@ namespace RTS_Server.Controllers
 {
     using Core.IServices;
     using Core.Models;
+    using global::RTS_Server.Dtos;
+    using global::RTS_Server.Helpers;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using System.Collections.Generic;
@@ -35,14 +37,10 @@ namespace RTS_Server.Controllers
                 if (lobby == null)
                     return BadRequest("Failed to create lobby.");
 
-                // Automatically add the creator to the lobby
-                var addedToLobby = await _lobbyService.JoinLobbyAsync(lobby.Id, userName);
-                if (!addedToLobby)
-                    return BadRequest("Failed to join the newly created lobby.");
-
-                return Ok(lobby);
+                // Map the lobby to LobbyDto
+                var lobbyDto = MappingHelper.ToLobbyDto(lobby);
+                return Ok(lobbyDto);
             }
-        
 
             // POST: api/lobbies/join
             [HttpPost("join/{lobbyId}")]
@@ -65,11 +63,11 @@ namespace RTS_Server.Controllers
             [Authorize]
             public async Task<IActionResult> LeaveLobbyAsync(int lobbyId)
             {
-                var userId = User.Identity.Name; // Get user ID from JWT token
-                if (string.IsNullOrEmpty(userId))
+                var username = User.Identity.Name; // Get username from the JWT token.
+                if (string.IsNullOrEmpty(username))
                     return Unauthorized("Invalid token.");
 
-                var success = await _lobbyService.LeaveLobbyAsync(lobbyId, int.Parse(userId));
+                var success = await _lobbyService.LeaveLobbyAsync(lobbyId, username);
                 if (!success)
                     return BadRequest("Failed to leave lobby.");
 
@@ -82,7 +80,10 @@ namespace RTS_Server.Controllers
             public async Task<IActionResult> GetAllLobbiesAsync()
             {
                 var lobbies = await _lobbyService.GetAllLobbiesAsync();
-                return Ok(lobbies);
+
+                // Use the mapping helper to convert List<Lobby> to List<LobbyDto>
+                var lobbiesDto = MappingHelper.ToLobbyDtoList(lobbies);
+                return Ok(lobbiesDto);
             }
 
             // GET: api/lobbies/{lobbyId}
@@ -94,10 +95,28 @@ namespace RTS_Server.Controllers
                 if (lobby == null)
                     return NotFound("Lobby not found.");
 
-                return Ok(lobby);
+                // Use the mapping helper to map Lobby to LobbyDto
+                var lobbyDto = MappingHelper.ToLobbyDto(lobby);
+                return Ok(lobbyDto);
             }
 
-            // POST: api/lobbies/start
+            // POST: api/lobbies/ready/{lobbyId}
+            [HttpPost("ready/{lobbyId}")]
+            [Authorize]
+            public async Task<IActionResult> ToggleReadyStatusAsync(int lobbyId)
+            {
+                var userName = User.Identity.Name; // Get username from JWT token
+                if (string.IsNullOrEmpty(userName))
+                    return Unauthorized("Invalid token.");
+
+                var success = await _lobbyService.ToggleReadyStatusAsync(lobbyId, userName);
+                if (!success)
+                    return BadRequest("Failed to toggle ready status.");
+
+                return Ok("Ready status toggled successfully.");
+            }
+
+            // POST: api/lobbies/start/{lobbyId}
             [HttpPost("start/{lobbyId}")]
             [Authorize]
             public async Task<IActionResult> StartGameAsync(int lobbyId)
@@ -114,5 +133,4 @@ namespace RTS_Server.Controllers
             }
         }
     }
-
 }

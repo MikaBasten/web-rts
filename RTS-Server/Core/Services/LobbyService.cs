@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Core.Services
 {
@@ -50,9 +51,9 @@ namespace Core.Services
             return await _lobbyRepository.AddPlayerToLobbyAsync(lobbyId, new Player { User = user, IsReady = false, SelectedFaction = Faction.None });
         }
 
-        public async Task<bool> LeaveLobbyAsync(int lobbyId, int userId)
+        public async Task<bool> LeaveLobbyAsync(int lobbyId, string username)
         {
-            return await _lobbyRepository.RemovePlayerFromLobbyAsync(lobbyId, userId);
+            return await _lobbyRepository.RemovePlayerFromLobbyAsync(lobbyId, username);
         }
 
         public async Task<IEnumerable<Lobby>> GetAllLobbiesAsync()
@@ -64,7 +65,10 @@ namespace Core.Services
         {
             return await _lobbyRepository.GetLobbyByIdAsync(lobbyId);
         }
-
+        public async Task<bool> ToggleReadyStatusAsync(int lobbyId, string username)
+        {
+            return await _lobbyRepository.ToggleReadyStatusAsync(lobbyId, username);
+        }
         public async Task<bool> StartGameAsync(int lobbyId)
         {
             var lobby = await _lobbyRepository.GetLobbyByIdAsync(lobbyId);
