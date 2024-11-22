@@ -22,15 +22,15 @@ jobs:
 
     # Step 3: Restore Dependencies
     - name: Restore Dependencies
-      run: dotnet restore RTS-Server/RTS-Server.csproj
+      run: dotnet restore "RTS-Server/RTS-Server/RTS-Server.csproj"
 
     # Step 4: Build the Application
     - name: Build Application
-      run: dotnet build RTS-Server/RTS-Server.csproj --configuration Release --no-restore
+      run: dotnet build "RTS-Server/RTS-Server/RTS-Server.csproj" --configuration Release --no-restore
 
     # Step 5: Run Tests (Optional)
     - name: Run Tests
-      run: dotnet test RTS-Server/RTS-Server.csproj --no-build --verbosity normal
+      run: dotnet test "RTS-Server/RTS-Server/RTS-Server.csproj" --no-build --verbosity normal
 
     # Step 6: Log in to Docker Hub
     - name: Log in to Docker Hub
@@ -47,7 +47,7 @@ jobs:
     - name: Push Docker Image to Docker Hub
       run: docker push ${{ secrets.DOCKER_USERNAME }}/rts-server:latest
 
-    # Step 9: Deploy to Server (Customize as Needed)
+    # Step 9: Deploy to Server (Optional - Customize as Needed)
     - name: Deploy to Server
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
