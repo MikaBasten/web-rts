@@ -18,7 +18,7 @@ jobs:
     - name: Set up .NET SDK
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '8.0' # Match your project's .NET version
+        dotnet-version: '8.0'
 
     # Step 3: Restore Dependencies
     - name: Restore Dependencies
@@ -34,22 +34,9 @@ jobs:
 
     # Step 6: Build Docker Image for Local Registry
     - name: Build Docker Image for Local Registry
-      run: docker build -t localhost:5000/rts-server:latest ./RTS-Server/RTS-Server
+      run: docker build -t localhost:5000/rts-server:latest ./RTS-Server
 
     # Step 7: Push Docker Image to Local Registry
     - name: Push Docker Image to Local Registry
       run: docker push localhost:5000/rts-server:latest
 
-    # Step 8: Deploy to Server (Optional - Customize as Needed)
-    - name: Deploy to Server
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        TARGET_HOST: ${{ secrets.TARGET_HOST }}
-        TARGET_USER: ${{ secrets.TARGET_USER }}
-      run: |
-        ssh -i "$SSH_PRIVATE_KEY" $TARGET_USER@$TARGET_HOST <<EOF
-          docker pull localhost:5000/rts-server:latest
-          docker stop rts-server || true
-          docker rm rts-server || true
-          docker run -d -p 8080:8080 --name rts-server localhost:5000/rts-server:latest
-        EOF
