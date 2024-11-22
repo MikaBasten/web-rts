@@ -32,12 +32,9 @@ jobs:
     - name: Run Tests
       run: dotnet test "RTS-Server/RTS-Server/RTS-Server.csproj" --no-build --verbosity normal
 
-    - name: List directory contents
-      run: ls -R
-
     # Step 6: Build Docker Image for Local Registry
     - name: Build Docker Image for Local Registry
-      run: docker build -f RTS-Server/RTS-Server/Dockerfile -t localhost:5000/rts-server:latest .
+      run: docker build -t localhost:5000/rts-server:latest .  # Build the Docker image and tag it for the local registry
 
 
     # Step 7: Push Docker Image to Local Registry
