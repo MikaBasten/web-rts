@@ -29,7 +29,7 @@ namespace RTS_Server.Controllers
             [Authorize] // Require authentication
             public async Task<IActionResult> CreateLobbyAsync([FromQuery] string name, [FromQuery] int playerLimit)
             {
-                var userName = User.Identity.Name; // Get user ID from JWT token
+                string? userName = User.Identity.Name; // Get user ID from JWT token
                 if (string.IsNullOrEmpty(userName))
                     return Unauthorized("Invalid token.");
 
@@ -47,7 +47,7 @@ namespace RTS_Server.Controllers
             [Authorize]
             public async Task<IActionResult> JoinLobbyAsync(int lobbyId)
             {
-                var userName = User.Identity.Name; // Get user ID from JWT token
+                string? userName = User.Identity.Name; // Get user ID from JWT token
                 if (string.IsNullOrEmpty(userName))
                     return Unauthorized("Invalid token.");
 

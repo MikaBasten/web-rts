@@ -1,4 +1,3 @@
-# Use the ASP.NET base image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
@@ -8,23 +7,19 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["RTS-Server/RTS-Server.csproj", "RTS-Server/"]
+COPY ["RTS-Server/DAL/Dal.csproj", "RTS-Server/DAL/"]
+COPY ["RTS-Server/Core/Core.csproj", "RTS-Server/Core/"]
+RUN dotnet restore "./RTS-Server/RTS-Server.csproj"
 
-# Copy the .csproj files for all projects and restore dependencies
-COPY ["../Core/Core.csproj", "Core/"]
-COPY ["../DAL/Dal.csproj", "DAL/"]
-COPY ["RTS-Server.csproj", "RTS-Server/"]
 
-RUN dotnet restore "RTS-Server/RTS-Server.csproj"
-
-# Copy all source code to the container
 COPY . .
-
-# Build the application
 WORKDIR "/src/RTS-Server"
-RUN dotnet build "RTS-Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./RTS-Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "RTS-Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./RTS-Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

@@ -39,4 +39,3 @@ jobs:
     # Step 7: Push Docker Image to Local Registry
     - name: Push Docker Image to Local Registry
       run: docker push localhost:5000/rts-server:latest
-
