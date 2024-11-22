@@ -10,9 +10,10 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy the .csproj files for all projects and restore dependencies
+COPY ["Core/Core.csproj", "Core/"]
 COPY ["RTS-Server/RTS-Server.csproj", "RTS-Server/"]
 COPY ["DAL/Dal.csproj", "DAL/"]
-COPY ["Core/Core.csproj", "Core/"]
+
 
 RUN dotnet restore "RTS-Server/RTS-Server.csproj"
 
