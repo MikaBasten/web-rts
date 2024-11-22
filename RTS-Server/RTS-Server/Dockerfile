@@ -27,8 +27,8 @@ WORKDIR "/src/RTS-Server"
 # Make sure the /app/build directory is writable by everyone (for CI/CD)
 RUN mkdir -p /app/build && chmod -R 777 /app/build
 
-# Build the project
-RUN dotnet build "./RTS-Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
+# Build the project with the UseAppHost=false flag to avoid apphost generation
+RUN dotnet build "./RTS-Server.csproj" -c $BUILD_CONFIGURATION -o /app/build /p:UseAppHost=false
 
 # Publish the app
 FROM build AS publish
