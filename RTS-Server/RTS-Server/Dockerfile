@@ -9,9 +9,9 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["RTS-Server/RTS-Server.csproj", "RTS-Server/"]
-COPY ["Core/Core.csproj", "Core/"]
-COPY ["DAL/DAL.csproj", "DAL/"]
+COPY ["RTS-Server/RTS-Server/RTS-Server.csproj", "RTS-Server/"]
+COPY ["RTS-Server/Core/Core.csproj", "Core/"]
+COPY ["RTS-Server/DAL/DAL.csproj", "DAL/"]
 RUN dotnet restore "./RTS-Server/RTS-Server.csproj"
 COPY . .
 WORKDIR "/src/RTS-Server"
