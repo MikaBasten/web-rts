@@ -10,9 +10,9 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy the .csproj files for all projects and restore dependencies
-COPY ["Core/Core.csproj", "Core/"]
-COPY ["DAL/Dal.csproj", "DAL/"]
-COPY ["RTS-Server/RTS-Server.csproj", "RTS-Server/"]
+COPY ["RTS-Server/Core/Core.csproj", "Core/"]
+COPY ["RTS-Server/DAL/Dal.csproj", "DAL/"]
+COPY ["RTS-Server/RTS-Server/RTS-Server.csproj", "RTS-Server/"]
 
 
 
