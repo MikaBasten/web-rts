@@ -1,0 +1,42 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up .NET SDK
+    - name: Set up .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0'
+
+    # Step 3: Restore Dependencies
+    - name: Restore Dependencies
+      run: dotnet restore "RTS-Server/RTS-Server/RTS-Server.csproj"
+
+    # Step 4: Build the Application
+    - name: Build Application
+      run: dotnet build "RTS-Server/RTS-Server/RTS-Server.csproj" --configuration Release --no-restore
+
+    # Step 5: Run Tests (Optional)
+    - name: Run Tests
+      run: dotnet test "RTS-Server/RTS-Server/RTS-Server.csproj" --no-build --verbosity normal
+
+    # Step 6: Build Docker Image for Local Registry
+    - name: Build Docker Image for Local Registry
+      run: docker build -t localhost:5000/rts-server:latest ./RTS-Server/RTS-Server
+
+    # Step 7: Push Docker Image to Local Registry
+    - name: Push Docker Image to Local Registry
+      run: docker push localhost:5000/rts-server:latest
+
