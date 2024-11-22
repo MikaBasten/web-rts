@@ -5,32 +5,27 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-# Use the .NET SDK for building the application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy all .csproj files (adjusted for your project structure)
+# Copy the .csproj files for all projects and restore dependencies
 COPY ["RTS-Server/RTS-Server.csproj", "RTS-Server/"]
 COPY ["DAL/Dal.csproj", "DAL/"]
 COPY ["Core/Core.csproj", "Core/"]
 
-
-# Restore dependencies for all projects
 RUN dotnet restore "RTS-Server/RTS-Server.csproj"
 
-# Copy the rest of the application code
+# Copy all source code to the container
 COPY . .
 
 # Build the application
 WORKDIR "/src/RTS-Server"
-RUN dotnet build "./RTS-Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "RTS-Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Publish the application
 FROM build AS publish
-RUN dotnet publish "./RTS-Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "RTS-Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Final image with the published app
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
