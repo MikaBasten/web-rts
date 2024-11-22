@@ -12,8 +12,9 @@ WORKDIR /src
 
 # Copy all .csproj files (adjusted for your project structure)
 COPY ["RTS-Server/RTS-Server.csproj", "RTS-Server/"]
-COPY ["RTS-Server/DAL/Dal.csproj", "RTS-Server/DAL/"]
-COPY ["RTS-Server/Core/Core.csproj", "RTS-Server/Core/"]
+COPY ["DAL/Dal.csproj", "DAL/"]
+COPY ["Core/Core.csproj", "Core/"]
+
 
 # Restore dependencies for all projects
 RUN dotnet restore "RTS-Server/RTS-Server.csproj"
