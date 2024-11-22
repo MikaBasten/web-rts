@@ -1,22 +1,17 @@
-version: '3.9'
+version: '3.8'
 
 services:
-  registry:
-    image: registry:2
-    container_name: local-registry
-    ports:
-      - "5000:5000"
-    volumes:
-      - registry_data:/var/lib/registry
-
   rts-server:
-    image: localhost:5000/rts-server:latest
-    container_name: rts-server
+    image: yourusername/rts-server:latest
+    container_name: rts-server-container
     ports:
-      - "8080:8080"
-    depends_on:
-      - registry
-    restart: always
+      - "8080:8080" # Map the necessary ports
+    restart: unless-stopped
 
-volumes:
-  registry_data:
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 300 --cleanup
