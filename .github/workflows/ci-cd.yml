@@ -32,18 +32,24 @@ jobs:
     - name: Run Tests
       run: dotnet test "RTS-Server/RTS-Server/RTS-Server.csproj" --no-build --verbosity normal
 
-    # Step 6: Log in to Docker Hub
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    # Step 7: Build Docker Image for Local Registry
+    # Step 6: Build Docker Image for Local Registry
     - name: Build Docker Image for Local Registry
       run: docker build -t localhost:5000/rts-server:latest .
 
+    # Step 7: Push Docker Image to Local Registry
+    - name: Push Docker Image to Local Registry
+      run: docker push localhost:5000/rts-server:latest
 
-    # Step 8: Push Docker Image to Docker Hub
-    - name: Push Docker Image to Docker Hub
-      run: docker push ${{ secrets.DOCKER_USERNAME }}/rts-server:latest
+    # Step 8: Deploy to Server (Optional - Customize as Needed)
+    - name: Deploy to Server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        TARGET_HOST: ${{ secrets.TARGET_HOST }}
+        TARGET_USER: ${{ secrets.TARGET_USER }}
+      run: |
+        ssh -i "$SSH_PRIVATE_KEY" $TARGET_USER@$TARGET_HOST <<EOF
+          docker pull localhost:5000/rts-server:latest
+          docker stop rts-server || true
+          docker rm rts-server || true
+          docker run -d -p 8080:8080 --name rts-server localhost:5000/rts-server:latest
+        EOF
