@@ -39,6 +39,10 @@ jobs:
     - name: Build Docker Image for Local Registry
       run: docker build -f RTS-Server/RTS-Server/Dockerfile -t localhost:5000/rts-server:latest .
 
+    # Step lsit docker
+    - name: List Docker Images
+      run: docker images
+
 
     # Step 8: Push Docker Image to Docker Hub
     - name: Push Docker Image to Docker Hub
