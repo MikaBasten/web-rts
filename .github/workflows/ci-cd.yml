@@ -36,6 +36,7 @@ jobs:
     - name: Build Docker Image for Local Registry
       run: docker build -f RTS-Server/RTS-Server/Dockerfile -t localhost:5000/rts-server:latest .
 
+
     # Step 7: Push Docker Image to Local Registry
     - name: Push Docker Image to Local Registry
       run: docker push localhost:5000/rts-server:latest
