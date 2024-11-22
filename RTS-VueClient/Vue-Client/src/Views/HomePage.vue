@@ -1,4 +1,3 @@
-<!-- src/Views/HomePage.vue -->
 <template>
   <div class="hex-grid" @click="closeHexagon">
     <Hexagon
@@ -53,11 +52,9 @@ export default {
   },
   methods: {
     selectHexagon(type) {
-      // Selects hexagon if none is selected, or toggles off the same type
       this.selectedHexagon = this.selectedHexagon === type ? null : type;
     },
     closeHexagon(event) {
-      // Close only if clicked outside any hexagon
       if (!event.target.closest(".hexagon")) {
         this.selectedHexagon = null;
       }
@@ -72,10 +69,19 @@ export default {
 <style scoped>
 .hex-grid {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 20px;
   max-width: 600px;
   margin: 0 auto;
+}
+
+/* Mobile view */
+@media (max-width: 768px) {
+  .hex-grid {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 </style>

@@ -10,29 +10,34 @@
     </div>
   </template>
   
-  <script>  
+  <script>
+  import api from '../api'; // Adjust the path as necessary
+  
   export default {
     data() {
       return {
         username: '',
+        email: '',
         password: '',
-        errorMessage: ''
+        errorMessage: '',
       };
     },
     methods: {
-      async register() {
+      async handleRegister() {
         try {
-          await api.post('/users/register', {
-            Username: this.username,
-            PasswordHash: this.password,
+          const response = await api.register({
+            username: this.username,
+            email: this.email,
+            password: this.password,
           });
-          alert("Registration successful! Redirecting to login...");
-          this.$router.push('/login'); // Redirect to login page on success
+          // Handle success, e.g., redirect, show success message, etc.
+          console.log('Registration successful:', response.data);
         } catch (error) {
-          this.errorMessage = error.response?.data || "Registration failed. Try again.";
+          this.errorMessage = error.response?.data?.message || 'An error occurred during registration.';
+          console.error('Registration error:', error);
         }
-      }
-    }
+      },
+    },
   };
   </script>
   
