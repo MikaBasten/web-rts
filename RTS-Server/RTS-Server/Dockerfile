@@ -24,7 +24,7 @@ COPY . .
 # Set the working directory to the RTS-Server project
 WORKDIR "/src/RTS-Server"
 
-# Make sure the /app/build directory is writable
+# Make sure the /app/build directory is writable by everyone (for CI/CD)
 RUN mkdir -p /app/build && chmod -R 777 /app/build
 
 # Build the project
