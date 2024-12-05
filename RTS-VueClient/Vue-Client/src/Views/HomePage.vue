@@ -4,10 +4,10 @@
     <Hexagon
       v-if="!isLoggedIn"
       :isDisabled="false"
-      :initiallyExpanded="selectedHexagon === 'login'"
+      :isSelected="expandedHexagons.includes('login')"
       @toggle="handleToggle('login', $event)"
     >
-      <template v-if="selectedHexagon === 'login'">
+      <template v-if="expandedHexagons.includes('login')">
         <LoginForm />
       </template>
       <template v-else>
@@ -19,10 +19,10 @@
     <Hexagon
       v-if="!isLoggedIn"
       :isDisabled="false"
-      :initiallyExpanded="selectedHexagon === 'register'"
+      :isSelected="expandedHexagons.includes('register')"
       @toggle="handleToggle('register', $event)"
     >
-      <template v-if="selectedHexagon === 'register'">
+      <template v-if="expandedHexagons.includes('register')">
         <RegisterForm />
       </template>
       <template v-else>
@@ -30,14 +30,14 @@
       </template>
     </Hexagon>
 
-    <!-- Lobby Creation -->
+    <!-- Lobby Creation Hexagon -->
     <Hexagon
       v-if="isLoggedIn && !inLobby"
       :isDisabled="false"
-      :initiallyExpanded="selectedHexagon === 'createLobby'"
+      :isSelected="expandedHexagons.includes('createLobby')"
       @toggle="handleToggle('createLobby', $event)"
     >
-      <template v-if="selectedHexagon === 'createLobby'">
+      <template v-if="expandedHexagons.includes('createLobby')">
         <LobbyCreation />
       </template>
       <template v-else>
@@ -45,14 +45,14 @@
       </template>
     </Hexagon>
 
-    <!-- Lobby Info -->
+    <!-- Lobby Info Hexagon -->
     <Hexagon
       v-if="isLoggedIn && inLobby"
       :isDisabled="false"
-      :initiallyExpanded="selectedHexagon === 'lobbyInfo'"
+      :isSelected="expandedHexagons.includes('lobbyInfo')"
       @toggle="handleToggle('lobbyInfo', $event)"
     >
-      <template v-if="selectedHexagon === 'lobbyInfo'">
+      <template v-if="expandedHexagons.includes('lobbyInfo')">
         <LobbyInfo :players="lobbyPlayers" />
       </template>
       <template v-else>
@@ -60,14 +60,14 @@
       </template>
     </Hexagon>
 
-    <!-- Chat Room -->
+    <!-- Chat Room Hexagon -->
     <Hexagon
       v-if="isLoggedIn && inLobby"
       :isDisabled="false"
-      :initiallyExpanded="selectedHexagon === 'chatRoom'"
+      :isSelected="expandedHexagons.includes('chatRoom')"
       @toggle="handleToggle('chatRoom', $event)"
     >
-      <template v-if="selectedHexagon === 'chatRoom'">
+      <template v-if="expandedHexagons.includes('chatRoom')">
         <ChatRoom />
       </template>
       <template v-else>
@@ -75,15 +75,15 @@
       </template>
     </Hexagon>
 
-    <!-- Logout -->
+    <!-- Logout Hexagon -->
     <Hexagon
       v-if="isLoggedIn"
       :isDisabled="false"
-      :initiallyExpanded="selectedHexagon === 'logout'"
+      :isSelected="expandedHexagons.includes('logout')"
       @toggle="handleToggle('logout', $event)"
     >
-      <template v-if="selectedHexagon === 'logout'">
-        <button @click="logout">Logout</button>
+      <template v-if="expandedHexagons.includes('logout')">
+        <button @click.stop="logout">Logout</button>
       </template>
       <template v-else>
         Logout
@@ -104,9 +104,9 @@ export default {
   components: { Hexagon, LoginForm, RegisterForm, LobbyCreation, LobbyInfo, ChatRoom },
   data() {
     return {
-      selectedHexagon: null,
-      inLobby: false, // Tracks whether the user is in a lobby
-      lobbyPlayers: [], // Players in the current lobby
+      expandedHexagons: [], // Array to track which hexagons are expanded
+      inLobby: false,       // Indicates if the user is in a lobby
+      lobbyPlayers: [],     // List of players in the current lobby
     };
   },
   computed: {
@@ -117,19 +117,30 @@ export default {
   methods: {
     handleToggle(hexagon, isExpanded) {
       if (isExpanded) {
-        this.selectedHexagon = hexagon;
-      } else if (this.selectedHexagon === hexagon) {
-        this.selectedHexagon = null;
+        if (!this.expandedHexagons.includes(hexagon)) {
+          if (!this.inLobby && ['login', 'register'].includes(hexagon)) {
+            // When not in lobby, only allow one of login/register to be expanded
+            this.expandedHexagons = [hexagon];
+          } else {
+            // When in lobby or other hexagons, allow multiple expansions
+            this.expandedHexagons.push(hexagon);
+          }
+        }
+      } else {
+        // Remove the hexagon from the expanded list
+        this.expandedHexagons = this.expandedHexagons.filter((h) => h !== hexagon);
       }
     },
     closeHexagon(event) {
       if (!event.target.closest(".hexagon")) {
-        this.selectedHexagon = null;
+        this.expandedHexagons = [];
       }
     },
     logout() {
       localStorage.removeItem("token");
-      this.$router.push("/"); // Navigate back to the login/register page
+      this.expandedHexagons = [];
+      this.inLobby = false;
+      this.$router.push("/"); 
     },
   },
 };

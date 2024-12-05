@@ -1,7 +1,8 @@
+<!-- Hexagon.vue -->
 <template>
   <div
     class="hexagon"
-    :class="{ expanded: isExpanded, disabled: isDisabled }"
+    :class="{ expanded: isSelected, disabled: isDisabled }"
     @click="toggleExpand"
   >
     <div class="hexagon-content">
@@ -13,19 +14,19 @@
 <script>
 export default {
   props: {
-    isDisabled: Boolean,
-    initiallyExpanded: Boolean,
-  },
-  data() {
-    return {
-      isExpanded: this.initiallyExpanded || false,
-    };
+    isDisabled: {
+      type: Boolean,
+      default: false,
+    },
+    isSelected: {
+      type: Boolean,
+      default: false,
+    },
   },
   methods: {
     toggleExpand() {
       if (!this.isDisabled) {
-        this.isExpanded = !this.isExpanded;
-        this.$emit("toggle", this.isExpanded);
+        this.$emit("toggle", !this.isSelected);
       }
     },
   },
