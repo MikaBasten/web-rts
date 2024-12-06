@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an instance of axios with default configurations
 const api = axios.create({
-  baseURL: 'http://localhost:5288/api', // Update with your server's base URL
+  baseURL: 'http://localhost:8080/api', // Update with your server's base URL
   headers: {
     'Content-Type': 'application/json',
   },
@@ -37,17 +37,35 @@ api.interceptors.response.use(
 // Export functions for API calls
 export default {
   login(credentials) {
-    return api.post('/Users/login', credentials);
+    return api.post('/users/login', credentials);
   },
   register(userDetails) {
-    return api.post('/Users/register', userDetails);
+    return api.post('/users/register', userDetails);
   },
-  // Add more API methods as needed
-  getUserProfile() {
-    return api.get('/user/profile');
+  
+  // Lobby Management
+  getLobbies() {
+    return api.get('/lobbies');
   },
-  updateProfile(profileData) {
-    return api.put('/user/profile', profileData);
+  getLobbyById(lobbyId) {
+    return api.get(`/lobbies/${lobbyId}`);
+  },
+  createLobby(name, playerLimit) {
+    return api.post('/lobbies/create', null, {
+      params: { name, playerLimit },
+    });
+  },
+  joinLobby(lobbyId) {
+    return api.post(`/lobbies/join/${lobbyId}`);
+  },
+  leaveLobby(lobbyId) {
+    return api.post(`/lobbies/leave/${lobbyId}`);
+  },
+  toggleReadyStatus(lobbyId) {
+    return api.post(`/lobbies/ready/${lobbyId}`);
+  },
+  startGame(lobbyId) {
+    return api.post(`/lobbies/start/${lobbyId}`);
   },
   // You can add other API endpoints here
 };

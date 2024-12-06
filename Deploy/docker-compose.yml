@@ -2,10 +2,13 @@ version: '3.8'
 
 services:
   rts-server:
-    image: yourusername/rts-server:latest
+    image: mikabasten/rts-server:latest
     container_name: rts-server-container
     ports:
-      - "8080:8080" # Map the necessary ports
+      - "8080:8080"
+    volumes:
+      # Mount the local appsettings.json file into the container
+      - C:/Users/mikab/source/repos/web-rts/RTS-Server/RTS-Server/appsettings.json:/app/appsettings.json
     restart: unless-stopped
 
   watchtower:

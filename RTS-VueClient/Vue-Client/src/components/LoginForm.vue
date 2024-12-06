@@ -1,44 +1,46 @@
 <template>
-  <div class="login-form">
-    <h2>Login</h2>
-    <form @submit.prevent="handleLogin">
-      <div>
-        <input type="username" placeholder="Username" v-model="username" id="username" required />
-      </div>
-      <div>
-        <input type="password" placeholder="Password" v-model="password" id="password" required />
-      </div>
+  <form @submit.prevent="handleLogin">
+    <div>
+      <input type="text" v-model="username" placeholder="Username" required />
+    </div>
+    <div>
+      <input type="password" v-model="password" placeholder="Password" required />
+    </div>
+    <div>
       <button type="submit">Login</button>
-    </form>
+    </div>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-  </div>
+  </form>
 </template>
 
 <script>
-import api from '../api';
+import api from "../api";
 
 export default {
   data() {
     return {
-      username: '',
-      password: '',
+      username: "",
+      password: "",
       errorMessage: null,
     };
   },
   methods: {
     async handleLogin() {
       try {
-        const response = await api.login({ username: this.username, password: this.password });
-        const token = response.data.token;
-        localStorage.setItem('token', token);
-        this.$router.push('/home'); // Navigate to home after successful login
+        const response = await api.login({
+          Username: this.username,
+          PasswordHash: this.password,
+        });
+        localStorage.setItem("token", response.data.token);
+        window.location.reload()
       } catch (error) {
-        this.errorMessage = 'Login failed. Please check your credentials.';
+        this.errorMessage = "Login failed. Please check your credentials.";
       }
     },
   },
 };
 </script>
+
 
 <style scoped>
 .error {

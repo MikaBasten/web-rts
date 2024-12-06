@@ -1,30 +1,27 @@
 <template>
-  <div class="register-form">
-    <h2>Register</h2>
-    <form @submit.prevent="handleRegister">
-      <div>
-        <input type="text" placeholder="Username" v-model="username" id="username" required />
-      </div>
-      <div>
-        <input type="password" placeholder="Password" v-model="password" id="password" required />
-      </div>
-      <div>
-        <button type="submit">Register</button>
-      </div>
-    </form>
+  <form @submit.prevent="handleRegister">
+    <div>
+      <input type="text" v-model="username" placeholder="Username" required />
+    </div>
+    <div>
+      <input type="password" v-model="passwordHash" placeholder="Password" required />
+    </div>
+    <div>
+      <button type="submit">Register</button>
+    </div>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     <p v-if="successMessage" class="success">{{ successMessage }}</p>
-  </div>
+  </form>
 </template>
 
 <script>
-import api from '../api';
+import api from "../api";
 
 export default {
   data() {
     return {
-      username: '',
-      password: '',
+      username: "",
+      passwordHash: "",
       errorMessage: null,
       successMessage: null,
     };
@@ -32,17 +29,21 @@ export default {
   methods: {
     async handleRegister() {
       try {
-        await api.register({ username: this.username, password: this.password });
-        this.successMessage = 'Registration successful! You can now log in.';
+        await api.register({
+          username: this.username,
+          passwordHash: this.passwordHash,
+        });
+        this.successMessage = "Registration successful! You can now log in.";
         this.errorMessage = null;
       } catch (error) {
-        this.errorMessage = 'Registration failed. Please try again.';
+        this.errorMessage = "Registration failed. Please try again.";
         this.successMessage = null;
       }
     },
   },
 };
 </script>
+
 
 <style scoped>
 .error {
@@ -52,3 +53,4 @@ export default {
   color: green;
 }
 </style>
+
