@@ -26,14 +26,14 @@
       </template>
     </Hexagon>
 
-    <div>
+    <div v-if="isLoggedIn">
       <h2>Lobby Management</h2>
       <!-- Use the CreateLobby component -->
-      <LobbyCreation />
+      <LobbyCreation/>
     </div>
 
-    <LobbyList />
-    <LobbyInfo />
+    <LobbyList v-if="isLoggedIn"/>
+    <LobbyInfo v-if="isLoggedIn"/>
 
     <Hexagon v-if="isLoggedIn" @click="navigateTo('feature1')">Feature 1</Hexagon>
     <Hexagon v-if="isLoggedIn" @click="navigateTo('feature2')">Feature 2</Hexagon>
