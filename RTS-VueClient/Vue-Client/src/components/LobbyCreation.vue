@@ -49,7 +49,7 @@ export default {
 </script>
 
 <style scoped>
-/* You can add your styles here */
+
 .error {
   color: red;
   font-size: 14px;

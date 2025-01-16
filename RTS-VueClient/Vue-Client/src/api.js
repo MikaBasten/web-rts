@@ -28,7 +28,6 @@ api.interceptors.response.use(
       console.error('Unauthorized! Redirecting to login...');
       // Optional: redirect to the login page or clear token
       localStorage.removeItem('token');
-      window.location.href = '/login'; // Adjust the path as needed
     }
     return Promise.reject(error);
   }
