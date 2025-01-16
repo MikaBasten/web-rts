@@ -15,7 +15,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     const password = document.getElementById("registerPassword").value;
 
     try {
-        const response = await fetch("http://localhost:5288/api/users/register", {
+        const response = await fetch("http://localhost:8080/api/users/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -43,7 +43,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
     const password = document.getElementById("loginPassword").value;
 
     try {
-        const response = await fetch("http://localhost:5288/api/users/login", {
+        const response = await fetch("http://localhost:8080/api/users/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -102,7 +102,7 @@ document.getElementById("createLobbyForm").addEventListener("submit", async func
     const token = localStorage.getItem("token");
 
     try {
-        const response = await fetch(`http://localhost:5288/api/lobbies/create?name=${name}&playerLimit=${playerLimit}`, {
+        const response = await fetch(`http://localhost:8080/api/lobbies/create?name=${name}&playerLimit=${playerLimit}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -135,7 +135,7 @@ async function fetchLobbies() {
     }
 
     try {
-        const response = await fetch("http://localhost:5288/api/lobbies", {
+        const response = await fetch("http://localhost:8080/api/lobbies", {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -181,7 +181,7 @@ async function joinLobby(lobbyId) {
     }
 
     try {
-        const response = await fetch(`http://localhost:5288/api/lobbies/join/${lobbyId}`, {
+        const response = await fetch(`http://localhost:8080/api/lobbies/join/${lobbyId}`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -214,7 +214,7 @@ async function leaveLobby(lobbyId) {
     }
 
     try {
-        const response = await fetch(`http://localhost:5288/api/lobbies/leave/${lobbyId}`, {
+        const response = await fetch(`http://localhost:8080/api/lobbies/leave/${lobbyId}`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -246,7 +246,7 @@ async function showLobbyScreen(lobbyId) {
     const token = localStorage.getItem("token");
 
     try {
-        const response = await fetch(`http://localhost:5288/api/lobbies/${lobbyId}`, {
+        const response = await fetch(`http://localhost:8080/api/lobbies/${lobbyId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -299,7 +299,7 @@ async function showLobbyScreen(lobbyId) {
 
     // Create a new connection if none exists
     connection = new signalR.HubConnectionBuilder()
-        .withUrl("http://localhost:5288/chatHub", { accessTokenFactory: () => localStorage.getItem("token") })
+        .withUrl("http://localhost:8080/chatHub", { accessTokenFactory: () => localStorage.getItem("token") })
         .withAutomaticReconnect() // Optionally, automatically reconnect if the connection is lost
         .build();
 
@@ -353,7 +353,7 @@ async function toggleReadyStatus(lobbyId) {
     }
 
     try {
-        const response = await fetch(`http://localhost:5288/api/lobbies/ready/${lobbyId}`, {
+        const response = await fetch(`http://localhost:8080/api/lobbies/ready/${lobbyId}`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -379,7 +379,7 @@ async function startGame(lobbyId) {
     }
 
     try {
-        const response = await fetch(`http://localhost:5288/api/lobbies/start/${lobbyId}`, {
+        const response = await fetch(`http://localhost:8080/api/lobbies/start/${lobbyId}`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`

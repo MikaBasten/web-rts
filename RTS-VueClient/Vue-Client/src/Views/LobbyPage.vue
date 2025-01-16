@@ -1,120 +1,145 @@
 <template>
-    <div>
-      <h1>Lobby: {{ lobby.name }}</h1>
-      <button @click="leaveLobby">Leave Lobby</button>
-  
-      <h2>Players</h2>
-      <ul>
-        <li v-for="player in lobby.players" :key="player.username">
-          {{ player.username }} - {{ player.isReady ? 'Ready' : 'Not Ready' }}
-        </li>
-      </ul>
-  
-      <button @click="toggleReadyStatus">
-        {{ currentPlayer?.isReady ? 'Unready' : 'Ready' }}
-      </button>
-  
-      <h2>Chat</h2>
-      <div id="chatBox">
-        <div v-for="message in messages" :key="message.id">
-          <strong>{{ message.user }}:</strong> {{ message.text }}
-        </div>
+  <div>
+    <h1>Lobby: {{ lobby?.name }}</h1>
+    <p>Players: {{ lobby?.currentPlayers }}/{{ lobby?.playerLimit }}</p>
+
+    <h2>Players List</h2>
+    <ul>
+      <li v-for="player in lobby?.players" :key="player.username">
+        {{ player.username }} - {{ player.isReady ? "Ready" : "Not Ready" }}
+      </li>
+    </ul>
+
+    <button @click="toggleReadyStatus">
+      {{ currentPlayer?.isReady ? "Unready" : "Ready" }}
+    </button>
+
+    <button @click="leaveLobby">Leave Lobby</button>
+    <button @click="startGame" v-if="isHost">Start Game</button>
+
+    <h2>Chat</h2>
+    <div id="chatBox">
+      <div v-for="message in chatMessages" :key="message.timestamp">
+        <strong>{{ message.user }}:</strong> {{ message.message }}
       </div>
-      <input v-model="chatMessage" placeholder="Type a message" @keyup.enter="sendMessage" />
-      <button @click="sendMessage">Send</button>
     </div>
-  </template>
-  
-  <script>
-  import * as signalR from '@microsoft/signalr';
-  
-  export default {
-    data() {
-      return {
-        lobby: {},
-        messages: [],
-        chatMessage: '',
-        connection: null,
-      };
-    },
-    computed: {
-      currentPlayer() {
-        return this.lobby.players.find(player => player.username === localStorage.getItem('username'));
-      }
-    },
-    async created() {
-      await this.fetchLobbyDetails();
-      this.connectToChat();
-    },
-    beforeDestroy() {
-      this.disconnectFromChat();
-    },
-    methods: {
-      async fetchLobbyDetails() {
-        const lobbyId = this.$route.params.id;
-        try {
-          const response = await api.get(`/lobbies/${lobbyId}`);
-          this.lobby = response.data;
-        } catch (error) {
-          alert('Error fetching lobby details: ' + error.response?.data || 'Unknown error');
-        }
-      },
-      async toggleReadyStatus() {
-        const lobbyId = this.$route.params.id;
-        try {
-          await api.post(`/lobbies/ready/${lobbyId}`);
-          await this.fetchLobbyDetails();
-        } catch (error) {
-          alert('Error toggling ready status: ' + error.response?.data || 'Unknown error');
-        }
-      },
-      async leaveLobby() {
-        const lobbyId = this.$route.params.id;
-        try {
-          await api.post(`/lobbies/leave/${lobbyId}`);
-          alert("Successfully left the lobby!");
-          this.$router.push('/');
-        } catch (error) {
-          alert('Error leaving lobby: ' + error.response?.data || 'Unknown error');
-        }
-      },
-      connectToChat() {
-        const lobbyId = this.$route.params.id;
-        this.connection = new signalR.HubConnectionBuilder()
-          .withUrl('http://localhost:5288/chatHub', {
-            accessTokenFactory: () => localStorage.getItem('token')
-          })
-          .build();
-  
-        this.connection.start()
-          .then(() => {
-            console.log("Connected to chat");
-            this.connection.invoke("JoinLobby", lobbyId);
-            this.connection.on("ReceiveMessage", (user, message) => {
-              this.messages.push({ user, text: message });
-            });
-          })
-          .catch(error => console.error("Error connecting to chat hub:", error));
-      },
-      disconnectFromChat() {
-        if (this.connection) {
-          this.connection.stop();
-        }
-      },
-      sendMessage() {
-        const lobbyId = this.$route.params.id;
+    <input v-model="newMessage" placeholder="Type a message..." />
+    <button @click="sendMessage">Send</button>
+  </div>
+</template>
+
+<script>
+import api from "../api";
+import * as signalR from "@microsoft/signalr";
+
+export default {
+  data() {
+    return {
+      lobby: null,
+      currentPlayer: null,
+      isHost: false,
+      newMessage: "",
+      chatMessages: [],
+      connection: null,
+    };
+  },
+  props: ["id"],
+
+  async created() {
+    await this.fetchLobbyData();
+    await this.setupSignalRConnection();
+  },
+
+  beforeUnmount() {
+    this.closeConnection();
+  },
+
+  methods: {
+    async fetchLobbyData() {
+      try {
+        const response = await api.getLobbyById(this.id);
+        this.lobby = response.data;
+
         const username = localStorage.getItem("username");
-        if (this.chatMessage.trim()) {
-          this.connection.invoke("SendMessageToLobby", lobbyId, username, this.chatMessage)
-            .then(() => { this.chatMessage = ''; })
-            .catch(error => console.error("Error sending message:", error));
-        }
+        this.currentPlayer = this.lobby.players.find(
+          (player) => player.username === username
+        );
+        this.isHost = this.currentPlayer?.role === "Host";
+      } catch (error) {
+        console.error("Failed to fetch lobby data:", error);
       }
-    }
-  };
-  </script>
-  
-  <style scoped>
-  /* Add your lobby-specific styles here */
-  </style>
-  
+    },
+
+    async setupSignalRConnection() {
+      this.connection = new signalR.HubConnectionBuilder()
+        .withUrl("http://localhost:5288/chatHub", {
+          accessTokenFactory: () => localStorage.getItem("token"),
+        })
+        .withAutomaticReconnect()
+        .build();
+
+      this.connection.on("ReceiveMessage", (user, message) => {
+        this.chatMessages.push({ user, message, timestamp: Date.now() });
+      });
+
+      try {
+        await this.connection.start();
+        await this.connection.invoke("JoinLobby", parseInt(this.id));
+      } catch (error) {
+        console.error("Error connecting to chat hub:", error);
+      }
+    },
+
+    async closeConnection() {
+      if (this.connection) {
+        await this.connection.invoke("LeaveLobby", parseInt(this.id));
+        await this.connection.stop();
+      }
+    },
+
+    async sendMessage() {
+      if (this.newMessage.trim() === "") return;
+
+      try {
+        const username = localStorage.getItem("username");
+        await this.connection.invoke(
+          "SendMessageToLobby",
+          parseInt(this.id),
+          username,
+          this.newMessage
+        );
+        this.newMessage = "";
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
+    },
+
+    async toggleReadyStatus() {
+      try {
+        await api.toggleReadyStatus(this.id);
+        await this.fetchLobbyData();
+      } catch (error) {
+        console.error("Error toggling ready status:", error);
+      }
+    },
+
+    async leaveLobby() {
+      try {
+        await api.leaveLobby(this.id);
+        this.$router.push("/"); // Redirect to the homepage after leaving
+      } catch (error) {
+        console.error("Error leaving lobby:", error);
+      }
+    },
+
+    async startGame() {
+      try {
+        await api.startGame(this.id);
+        alert("Game started!");
+      } catch (error) {
+        console.error("Error starting game:", error);
+      }
+    },
+  },
+};
+</script>
